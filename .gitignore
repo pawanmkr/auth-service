@@ -1,0 +1,8 @@
+.DS_Store
+.env
+
+node_modules/
+pnpm-*.yaml
+package-*.json
+dist/
+LICENSE.txt
