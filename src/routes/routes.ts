@@ -1,8 +1,12 @@
 import { Router, Request, Response } from "express";
-import { body, validationResult } from "express-validator";
 import { UserController } from "../controllers/index.js";
+import { 
+  validateRoute, 
+  userRegistrationValidationChain, 
+  userLoginValidationChain 
+} from "../utils/validation/user.js";
 
 export const router: Router = Router();
 
-router.post("/user/register", UserController.registerNewUser);
-router.post("/user/login", UserController.login);
+router.post("/register", userRegistrationValidationChain, validateRoute, UserController.registerNewUser);  
+router.post("/login", userLoginValidationChain, validateRoute, UserController.login);

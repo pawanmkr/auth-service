@@ -1,13 +1,13 @@
 import dotenv from "dotenv";
-dotenv.config();
 import express, { Express, NextFunction, Request, Response } from "express";
 import cors from "cors";
 import { router } from "./routes/routes.js";
 import client from "./config/db.js";
 import { PoolClient } from "pg";
-import { Tables } from "./controllers/createTables.js";
 import morgan from "morgan";
 import { errorMiddleware } from "./middlewares/index.js";
+
+dotenv.config();
 
 const app: Express = express();
 const port: string | number = process.env.PORT || 8080;
@@ -46,7 +46,6 @@ while (retryCount) {
     const db: PoolClient = await client.connect();
     if (db) {
       console.log("Database Connected");
-      await Tables.createTables();
       startServer();
     }
     break;
