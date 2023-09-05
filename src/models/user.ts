@@ -50,4 +50,16 @@ export class User {
     const user = await client.query(query, [user_type, first_name, last_name, username, email, password]);
     return user.rows[0];
   }
+
+  static async getUserById(id: number): Promise<QueryResultRow> {
+    const query = `SELECT * FROM users WHERE user_id = $1`;
+    const user = await client.query(query, [id]);
+    return user.rows[0];
+  }
+  
+  static async updateCreator(id: number, created_by: number): Promise<void> {
+    const query = `UPDATE users SET created_by = $2 WHERE user_id = $1`;
+    const user = await client.query(query, [id, created_by]);
+    return user.rows[0];
+  }
 }
