@@ -1,11 +1,10 @@
 import { Request, Response } from "express";
 import dotenv from "dotenv";
 import path from "path";
-import crypto from "crypto";
 import { Secret } from "jsonwebtoken";
 import { QueryResultRow } from "pg";
 import { Tokens } from "../types/index.js";
-import { createNewSession } from "../utils/index.js";
+import { Token, hashPassword } from "../utils/index.js";
 import { User } from "../models/index.js";
 
 dotenv.config({
@@ -21,10 +20,7 @@ export class UserController {
   // Registration Controller
   static async registerNewUser(req: Request, res: Response) {
     const { user_type, first_name, last_name, username, email, password, created_by } = req.body;
-    const hashedPassword: string = crypto
-      .createHash("sha512")
-      .update(password)
-      .digest("hex");
+    const hashedPassword = hashPassword(password);
 
     const existingUser: boolean = await User.doesEmailAlreadyExists(email);
     if (existingUser) {
@@ -47,7 +43,7 @@ export class UserController {
     } else {
       await User.updateCreator(registeredUser.user_id, created_by);
     }
-    const session: Tokens = await createNewSession(registeredUser.user_id, registeredUser.user_type, privateKey as string);
+    const session: Tokens = await Token.createNewSession(registeredUser.user_id, registeredUser.user_type, privateKey as string);
       
     return res.status(201).json({
       message: `User Registration Succesfull`,
@@ -68,15 +64,11 @@ export class UserController {
       return res.status(404).send("User does not exists! Please Signup");
     }
 
-    const hashedPassword: string = crypto
-      .createHash("sha512")
-      .update(password)
-      .digest("hex");
-
+    const hashedPassword = hashPassword(password);
     if (existingUser.password !== hashedPassword) {
       return res.status(404).send("username or passowrd is incorrect");
     }
-    const session: Tokens = await createNewSession(existingUser.user_id, existingUser.user_type, privateKey as string);
+    const session: Tokens = await Token.createNewSession(existingUser.user_id, existingUser.user_type, privateKey as string);
 
     return res.status(201).json({
       message: `Login Succesfull`,
