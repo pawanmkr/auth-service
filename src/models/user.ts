@@ -59,7 +59,11 @@ export class User {
   
   static async updateCreator(id: number, created_by: number): Promise<void> {
     const query = `UPDATE users SET created_by = $2 WHERE user_id = $1`;
-    const user = await client.query(query, [id, created_by]);
-    return user.rows[0];
+    await client.query(query, [id, created_by]);
+  }
+  
+  static async updatePassword(userId: number, newPassword: string): Promise<void> {
+    const query = `UPDATE users SET password = $2 WHERE user_id = $1`;
+    await client.query(query, [userId, newPassword]);
   }
 }

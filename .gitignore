@@ -6,3 +6,4 @@ pnpm-*.yaml
 package-*.json
 dist/
 LICENSE.txt
+check.js
