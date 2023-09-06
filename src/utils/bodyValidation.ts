@@ -24,6 +24,7 @@ export class InputValidation {
   static userLoginSchema = Joi.object({
     username: Joi.string().min(4).pattern(/^[a-z0-9.?_?]+$/).trim().optional(),
     email: Joi.string().email().trim().optional(),
+    password: Joi.string().min(6).required()
   });
 
   static emailSchema = Joi.object({
