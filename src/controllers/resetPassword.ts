@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import crypto from "crypto";
-import { Token, returnError, hashPassword } from "../utils/index.js";
+import { Token, returnError, hashPassword, sendMail, messageForEmailVerification, messageForPasswordReset } from "../utils/index.js";
 import { User, Password } from "../models/index.js";
 
 const TOKEN_LENGTH = 32;
@@ -15,12 +15,16 @@ export async function generatePasswordResetToken(req: Request, res: Response, ne
   }
   const token = crypto.randomBytes(TOKEN_LENGTH).toString('hex');
   const expiry = Token.generateEpochTimestampInHours(24);
-  Password.registerResetRequest(email, token, expiry);
+  await Password.registerResetRequest(email, token, expiry);
 
-  // send token with magic link
+  const magicLink = `${process.env.CLIENT_URL}/password_reset?token=${token}`;
+  const mailSent = await sendMail(email, "Request for Password Reset", messageForPasswordReset(magicLink));
+  if (!mailSent) {
+    return res.status(500).send("Internal Server Error");
+  }
 
   res.status(201).json({
-    reset_token: token
+    magic_link: magicLink
   });
   next();
 }

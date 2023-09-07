@@ -66,4 +66,10 @@ export class User {
     const query = `UPDATE users SET password = $2 WHERE user_id = $1`;
     await client.query(query, [userId, newPassword]);
   }
+  
+  static async updateEmailVerificationStatus(email: string): Promise<void> {
+    await client.query(
+      `UPDATE users SET email_verified = true WHERE email = $1`, 
+    [email]);
+  }
 }
