@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
 import path from "path";
 import { Secret } from "jsonwebtoken";
@@ -6,6 +6,7 @@ import { QueryResultRow } from "pg";
 import { Tokens } from "../types/index.js";
 import { Token, hashPassword } from "../utils/index.js";
 import { User } from "../models/index.js";
+import { sendEmailVerificationLink } from "./email.js";
 
 dotenv.config({
   path: path.join(process.cwd(), ".env"),
@@ -18,7 +19,7 @@ if (privateKey === undefined) {
 
 export class UserController {
   // Registration Controller
-  static async registerNewUser(req: Request, res: Response) {
+  static async registerNewUser(req: Request, res: Response, next: NextFunction) {
     const { user_type, first_name, last_name, username, email, password, created_by } = req.body;
     const hashedPassword = hashPassword(password);
 
@@ -44,16 +45,18 @@ export class UserController {
       await User.updateCreator(registeredUser.user_id, created_by);
     }
     const session: Tokens = await Token.createNewSession(registeredUser.user_id, registeredUser.user_type, privateKey as string);
-      
-    return res.status(201).json({
+    await sendEmailVerificationLink(registeredUser.email);
+  
+    res.status(201).json({
       message: `User Registration Succesfull`,
       access_token: session.accessToken,
       refresh_token: session.refreshToken
     });
+    next();
   }
 
   // Login Controller
-  static async login(req: Request, res: Response) {
+  static async login(req: Request, res: Response, next: NextFunction) {
     const { username, email, password } = req.body;
     if (!username && !email) {
       return res.status(400).json({ error: 'Username or Email is required' });
@@ -75,5 +78,6 @@ export class UserController {
       access_token: session.accessToken,
       refresh_token: session.refreshToken
     });
+    next();
   }
 }
