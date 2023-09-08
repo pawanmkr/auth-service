@@ -2,16 +2,21 @@ import client from "../config/db.js";
 import { QueryResultRow } from "pg";
 
 export class User {
-  static async findExistingUser(username: string, email: string): Promise<QueryResultRow> {
+  static async findExistingUser(userId: number, username: string, email: string): Promise<QueryResultRow> {
     let user: QueryResultRow;
-    if (username) {
+    if (userId) {
       user = await client.query(
-        `SELECT * FROM users WHERE username = $1`,
+        `SELECT * FROM auth.users WHERE user_id = $1`,
+        [userId]
+      );
+    } else if (username) {
+      user = await client.query(
+        `SELECT * FROM auth.users WHERE username = $1`,
         [username]
       );
-    } else {
+    } else if (email) { 
       user = await client.query(
-        `SELECT * FROM users WHERE email = $1`,
+        `SELECT * FROM auth.users WHERE email = $1`,
         [email]
       );
     }
@@ -20,7 +25,7 @@ export class User {
   
   static async doesEmailAlreadyExists(email: string): Promise<boolean> {
     const existingEmail = await client.query(
-      `SELECT * FROM users WHERE email = $1`,
+      `SELECT * FROM auth.users WHERE email = $1`,
       [email]
     );
     return existingEmail.rowCount > 0 ? true : false;
@@ -30,7 +35,7 @@ export class User {
     username: string
   ): Promise<boolean> {
     const existingUser = await client.query(
-      `SELECT * FROM users WHERE username = $1`,
+      `SELECT * FROM auth.users WHERE username = $1`,
       [username]
     );
     return existingUser.rowCount > 0 ? true : false;
@@ -45,31 +50,63 @@ export class User {
     password: string
   ): Promise<QueryResultRow> {
     const query = `
-      INSERT INTO users (user_type, first_name, last_name, username, email, password) 
+      INSERT INTO auth.users (user_type, first_name, last_name, username, email, password) 
       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`;
     const user = await client.query(query, [user_type, first_name, last_name, username, email, password]);
     return user.rows[0];
   }
 
   static async getUserById(id: number): Promise<QueryResultRow> {
-    const query = `SELECT * FROM users WHERE user_id = $1`;
+    const query = `SELECT * FROM auth.users WHERE user_id = $1`;
     const user = await client.query(query, [id]);
     return user.rows[0];
   }
   
   static async updateCreator(id: number, created_by: number): Promise<void> {
-    const query = `UPDATE users SET created_by = $2 WHERE user_id = $1`;
+    const query = `UPDATE auth.users SET created_by = $2 WHERE user_id = $1`;
     await client.query(query, [id, created_by]);
   }
   
   static async updatePassword(userId: number, newPassword: string): Promise<void> {
-    const query = `UPDATE users SET password = $2 WHERE user_id = $1`;
+    const query = `UPDATE auth.users SET password = $2 WHERE user_id = $1`;
     await client.query(query, [userId, newPassword]);
   }
   
   static async updateEmailVerificationStatus(email: string): Promise<void> {
     await client.query(
-      `UPDATE users SET email_verified = true WHERE email = $1`, 
+      `UPDATE auth.users SET email_verified = true WHERE email = $1`, 
     [email]);
+  }
+
+  static async getUserProfileById(id: number): Promise<QueryResultRow> {
+    const query = `
+      SELECT user_id, first_name, last_name, username, email, email_verified, user_type
+      FROM auth.users
+      WHERE user_id = $1;`;
+    const user = await client.query(query, [id]);
+    return user.rows[0];
+  }
+
+  static async updateUserProfileById(fields: string[], values: string[]): Promise<QueryResultRow> {
+    const lastIndex = fields.length + 1;
+    const query = `
+      UPDATE auth.users SET ${fields.join(',')}
+      WHERE user_id = $${lastIndex};`;
+    const user = await client.query(query, values);
+    return user.rows[0];
+  }
+  
+  static async deleteUserProfileById(id: number): Promise<void> {
+    await client.query(`
+      DELETE FROM auth.users WHERE user_id = $1`, 
+    [id]);
+  }
+  static async getUserProfieById(id: number): Promise<QueryResultRow> {
+    const query = `
+      SELECT user_id, first_name, last_name, username, email, email_verified, user_type
+      FROM auth.auth.users
+      WHERE user_id = $1;`;
+    const user = await client.query(query, [id]);
+    return user.rows[0];
   }
 }

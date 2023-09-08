@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { NextFunction, Request, Response } from "express";
-import { Token, returnError } from "../utils/index.js";
+import { Token, errorInResponse } from "../utils/index.js";
 import { EmailVerification, User } from "../models/index.js";
 import { messageForEmailVerification, sendMail } from "../utils/index.js";
 
@@ -22,11 +22,11 @@ export async function sendEmailVerificationLink(email: string) {
 export async function confirmEmailVerification(req: Request, res: Response, next: NextFunction) {
   const token = req.query.token as string;
   const result = await EmailVerification.findEmailVerificationRequestByToken(token);
-  if (!result) return returnError(res, 404, "Invalid Token");
+  if (!result) return errorInResponse(res, 404, "Invalid Token");
 
   const now = new Date();
   if (result.expiry < now.getTime()) {
-    return returnError(res, 400, "Verification Token Expired");
+    return errorInResponse(res, 400, "Verification Token Expired");
   }
 
   await EmailVerification.deleteEmailVerificationRequest(result.email);

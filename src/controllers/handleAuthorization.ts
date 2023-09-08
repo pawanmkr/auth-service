@@ -62,7 +62,7 @@ export class UserController {
       return res.status(400).json({ error: 'Username or Email is required' });
     }
 
-    const existingUser: QueryResultRow = await User.findExistingUser(username, email)
+    const existingUser: QueryResultRow = await User.findExistingUser(null, username, email)
     if (!existingUser) {
       return res.status(404).send("User does not exists! Please Signup");
     }

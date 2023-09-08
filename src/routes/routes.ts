@@ -6,7 +6,9 @@ import {
   verifyAndRefreshToken, 
   confirmPasswordReset, 
   sendEmailVerificationLink, 
-  confirmEmailVerification 
+  confirmEmailVerification, 
+  getUserProfile,
+  updateUserProfile
 } from "../controllers/index.js";
 
 export const router: Router = Router();
@@ -21,3 +23,6 @@ router.post("/password/reset/confirm", InputValidation.validatePassword, confirm
 
 router.post("/email/verify/request", InputValidation.validateEmail, sendEmailVerificationLink);
 router.get("/email/verify/confirm", confirmEmailVerification);
+
+router.get("/user/profile", getUserProfile);
+router.put("/user/profile", updateUserProfile);
