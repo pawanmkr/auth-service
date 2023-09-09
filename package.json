@@ -13,12 +13,11 @@
   "scripts": {
     "clean": "rm -rf dist node_modules && rm pnpm-lock.yaml",
     "build": "pnpm install && tsc",
-    "build:dev": "pnpm build && nodemon dist/app.js",
     "dev": "nodemon dist/app.js",
     "prod": "node dist/app.js",
+    "build:dev": "pnpm run build && nodemon dist/app.js",
     "watch": "tsc --watch",
-    "dev:start": "docker compose up -d && pnpm install && pnpm run dev",
-    "prod:start": "pnpm install && pnpm run build && pnpm run prod"
+    "prod:start": "pnpm run build && pnpm run prod"
   },
   "dependencies": {
     "@types/morgan": "^1.9.4",

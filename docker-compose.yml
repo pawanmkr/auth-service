@@ -7,5 +7,21 @@ services:
       - POSTGRES_USER=${PG_USER}
       - POSTGRES_PASSWORD=${PG_PASSWORD}
       - POSTGRES_DB=${PG_DATABASE}
+    expose:
+      - 5432
+    networks:
+      - backend-database
+
+  auth-service:
+    build: .
+    image: auth-service
+    restart: always
+    depends_on:
+      - postgres
     ports:
-      - "${PG_PORT}:5432"
+      - 8088:8088
+    networks:
+      - backend-database
+
+networks:
+  backend-database:
