@@ -90,23 +90,23 @@ export class User {
   static async updateUserProfileById(fields: string[], values: string[]): Promise<QueryResultRow> {
     const lastIndex = fields.length + 1;
     const query = `
-      UPDATE auth.users SET ${fields.join(',')}
+      UPDATE auth.users SET ${fields.join(', ')}
       WHERE user_id = $${lastIndex};`;
     const user = await client.query(query, values);
     return user.rows[0];
   }
   
-  static async deleteUserProfileById(id: number): Promise<void> {
+  static async archiveUserProfileById(userId: number, archived_by: number, archived_at: string): Promise<void> {
     await client.query(`
-      DELETE FROM auth.users WHERE user_id = $1`, 
-    [id]);
+      UPDATE auth.users 
+      SET is_archived = true, archived_at = $3, archived_by = $2 
+      WHERE user_id = $1`, 
+    [userId, archived_by, archived_at]);
   }
-  static async getUserProfieById(id: number): Promise<QueryResultRow> {
+
+  static async deleteUserProfileById(userId: number): Promise<void> {
     const query = `
-      SELECT user_id, first_name, last_name, username, email, email_verified, user_type
-      FROM auth.auth.users
-      WHERE user_id = $1;`;
-    const user = await client.query(query, [id]);
-    return user.rows[0];
+      DELETE FROM auth.users WHERE user_id = $1`;
+    await client.query(query, [userId]);
   }
 }

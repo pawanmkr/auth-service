@@ -34,8 +34,31 @@ export async function updateUserProfile(req: Request, res: Response) {
   const values: string[] = Object.entries(req.body).map(([key, values]) => {
     return values as string
   });
+  
+  fields.push(`updated_at = $${fields.length + 1}`);
+  values.push(new Date().toISOString().replace('T', ' ').replace('Z', ' '))
   values.push(userId.toString());
-
+  
   await User.updateUserProfileById(fields, values);
   return res.status(201).send("Fields updated succesfully");
 }
+
+export async function archiveUserProfile(req: Request, res: Response) {
+  const userId = parseInt(req.query.user_id as string);
+  const { archived_by } = req.body;
+  const existingUser = await User.findExistingUser(archived_by, null, null);
+  if (!existingUser) {
+    return errorInResponse(res, 404, "You cannot make changes to the profile");
+  }
+  const archived_at = new Date().toISOString().replace('T', ' ').replace('Z', ' ');
+  await User.archiveUserProfileById(userId, archived_by, archived_at);
+  return res.status(201).send("User Archived succesfully");
+}
+
+export async function deleteUserProfile(req: Request, res: Response) {
+  const userId = parseInt(req.query.user_id as string);
+  await User.deleteUserProfileById(userId);
+  return res.status(201).send("Deletion succesfull");
+}
+
+// TODO: unarchive function

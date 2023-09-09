@@ -8,7 +8,9 @@ import {
   sendEmailVerificationLink, 
   confirmEmailVerification, 
   getUserProfile,
-  updateUserProfile
+  updateUserProfile,
+  deleteUserProfile,
+  archiveUserProfile
 } from "../controllers/index.js";
 
 export const router: Router = Router();
@@ -25,4 +27,6 @@ router.post("/email/verify/request", InputValidation.validateEmail, sendEmailVer
 router.get("/email/verify/confirm", confirmEmailVerification);
 
 router.get("/user/profile", getUserProfile);
-router.put("/user/profile", updateUserProfile);
+router.put("/user/profile", InputValidation.validateUserUpdate, updateUserProfile);
+router.put("/user/profile/archive", InputValidation.validateArchivedBy, archiveUserProfile);
+router.delete("/user/profile", deleteUserProfile);
