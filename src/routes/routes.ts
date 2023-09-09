@@ -6,8 +6,13 @@ import {
   verifyAndRefreshToken, 
   confirmPasswordReset, 
   sendEmailVerificationLink, 
-  confirmEmailVerification 
+  confirmEmailVerification, 
+  getUserProfile,
+  updateUserProfile,
+  deleteUserProfile,
+  archiveUserProfile
 } from "../controllers/index.js";
+import authorization from "../middlewares/auth.js";
 
 export const router: Router = Router();
 
@@ -21,3 +26,10 @@ router.post("/password/reset/confirm", InputValidation.validatePassword, confirm
 
 router.post("/email/verify/request", InputValidation.validateEmail, sendEmailVerificationLink);
 router.get("/email/verify/confirm", confirmEmailVerification);
+
+
+/* PROTECTED ROUTES */
+router.get("/user/profile", authorization, getUserProfile);
+router.put("/user/profile", InputValidation.validateUserUpdate, authorization, updateUserProfile);
+router.put("/user/profile/archive", InputValidation.validateArchivedBy, authorization, archiveUserProfile);
+router.delete("/user/profile", authorization, deleteUserProfile);

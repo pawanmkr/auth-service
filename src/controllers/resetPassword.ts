@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import crypto from "crypto";
-import { Token, returnError, hashPassword, sendMail, messageForEmailVerification, messageForPasswordReset } from "../utils/index.js";
+import { Token, errorInResponse, hashPassword, sendMail, messageForEmailVerification, messageForPasswordReset } from "../utils/index.js";
 import { User, Password } from "../models/index.js";
 
 const TOKEN_LENGTH = 32;
@@ -32,22 +32,22 @@ export async function generatePasswordResetToken(req: Request, res: Response, ne
 export async function confirmPasswordReset(req: Request, res: Response, next: NextFunction) {
   const { password, confirm_password, reset_token } = req.body;
   if (password !== confirm_password) {
-    return returnError(res, 400, "Entered passwords do not match");
+    return errorInResponse(res, 400, "Entered passwords do not match");
   }
 
   const result = await Password.findResetRequestByToken(reset_token);
   if (!result) {
-    return returnError(res, 404, "Invalid token provided");
+    return errorInResponse(res, 404, "Invalid token provided");
   }
 
   const now = new Date();
   if (now.getTime() > result.expiry) {
-    return returnError(res, 406, "Link expired! Please try again");
+    return errorInResponse(res, 406, "Link expired! Please try again");
   }
 
-  const user = await User.findExistingUser(null, result.email);
+  const user = await User.findExistingUser(null, null, result.email);
   if (!user) {
-    return returnError(res, 500, "Internal Server Error");
+    return errorInResponse(res, 500, "Internal Server Error");
   }
 
   await User.updatePassword(user.user_id, hashPassword(password));

@@ -12,11 +12,7 @@ if (!jwtSecret) {
   throw new Error("Unable to retrieve JWT Secret Key from env");
 }
 
-interface AuthenticatedRequest extends Request {
-  user?: any;
-}
-
-export default async function authorization(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export default async function authorization(req: Request, res: Response, next: NextFunction) {
   const authHeader: string = req.headers.authorization || '';
   const token: string = authHeader && authHeader.split(' ')[1] || '';
 
@@ -26,7 +22,6 @@ export default async function authorization(req: AuthenticatedRequest, res: Resp
         console.error(err);
         return res.status(403).json({ error: 'Failed to authenticate token.' });
       }
-      req.user = user;
       next();
     });
   } else {
